@@ -1,3 +1,19 @@
 body {
     background-color: #F8F8F8;
 }
+
+#yearly-approvals-fig .hoverlayer .bg {
+    rx: 4;
+    shape-rendering: auto;
+}
+
+#company-stacked-fig .hoverlayer .bg {
+    rx: 4;
+    shape-rendering: auto;
+}
+
+/*
+#company-stacked-fig > div.js-plotly-plot > div > div > svg > g.cartesianlayer > g > g.plot > g > g:nth-last-child(1) > g > g > path {
+    clip-path: inset(0% 0% 0% 0% round 0.8rem 0.8rem 0 0);
+}
+*/
