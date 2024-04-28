@@ -1,5 +1,6 @@
 import dash
-from dash import dcc, html, callback, Input, Output, State
+from dash import dcc, html, callback, Input, Output, State, no_update, clientside_callback, ClientsideFunction
+from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 import pandas as pd
 from dash_iconify import DashIconify
@@ -21,7 +22,8 @@ from utils.home_utils import (
 
 from layouts.home_layout import (
     make_container,
-    assemble_kpi_panel
+    assemble_kpi_panel,
+    make_tooltip_layout
 )
 
 from utils.config import (
@@ -47,6 +49,7 @@ layout = html.Div(
     [
         dcc.Store(data=drug_approvals_df.to_dict('records'), id='drug-approvals-data'),
         dcc.Store(data=None, id='filtered-drug-approvals-data'),
+        dcc.Store(id='mouse-position'),
         dmc.Grid(
             [
                 dmc.Col(
@@ -110,7 +113,6 @@ layout = html.Div(
                                                         dmc.Text(
                                                             'approvals',
                                                             transform='uppercase',
-                                                            # color='black',
                                                             color='white',
                                                             style={
                                                                 'font-size': '0.85rem'
@@ -120,20 +122,6 @@ layout = html.Div(
                                                     spacing=0,
                                                     align='center'
                                                 )
-                                                # dcc.Graph(
-                                                #     id='min-approvals-year-fig',
-                                                #     figure={},
-                                                #     config=FIG_CONFIG,
-                                                #     style={
-                                                #         'width': '89%',
-                                                #         'height': '55px',
-                                                #         'position': 'absolute',
-                                                #         'bottom': '0',
-                                                #         'left': '50%',
-                                                #         'transform': 'translateX(-50%)',
-                                                #     },
-                                                #     responsive=True
-                                                # ),
                                             ],
                                             px=0,
                                             style={
@@ -206,7 +194,26 @@ layout = html.Div(
                                                     id='drug-type-fig',
                                                     config=FIG_CONFIG,
                                                     style={'height': '250px'},
+                                                    clear_on_unhover=True,
                                                     responsive=True
+                                                ),
+                                                dcc.Tooltip(
+                                                    id='tooltip-drug-type-fig',
+                                                    direction='bottom',
+                                                    background_color='rgba(0,0,0,0.9)',
+                                                    border_color='rgba(0,0,0,0.9)',
+                                                    style={
+                                                        'border-radius': '4px',
+                                                        'color': 'white',
+                                                        'font-family': '"Open Sans", "Verdana", "Arial", sans-serif',
+                                                        'font-size': '0.75rem',
+                                                        'padding': '0',
+                                                        'width': '175px',
+                                                        'height': '25px',
+                                                        'display': 'flex',
+                                                        'flex-direction': 'column',
+                                                        'justify-content': 'center'
+                                                    },
                                                 )
                                             ],
                                             style_height='300px',
@@ -318,7 +325,8 @@ def update_drug_approvals_data(year: int, data: dict) -> list:
 @callback(
     Output('total-approvals-count', 'children'),
     Input('filtered-drug-approvals-data', 'data'),
-    State('year-input', 'value')
+    State('year-input', 'value'),
+    prevent_initial_call=True
 )
 def update_count_total_approvals(data: dict, year: int) -> int:
     """
@@ -342,7 +350,8 @@ def update_count_total_approvals(data: dict, year: int) -> int:
     Output('main-focus-kpi', 'children'),
     Output('leading-class-kpi', 'children'),
     Output('last-updated-kpi', 'children'),
-    Input('filtered-drug-approvals-data', 'data')
+    Input('filtered-drug-approvals-data', 'data'),
+    prevent_initial_call=True
 )
 def update_kpi_panel(data):
     df = pd.DataFrame(data)
@@ -368,20 +377,10 @@ def update_kpi_panel(data):
     return *all_kpis, abbreviated_time
 
 
-# @callback(
-#     Output('min-approvals-year-fig', 'figure'),
-#     Input('year-input', 'value'),
-#     prevent_initial_call=True
-# )
-# def update_min_approvals_year(_):
-#     df_grouped_year = drug_approvals_df.groupby('year').size().reset_index(name='total')
-#     print(df_grouped_year)
-#     return plot_min_approvals_year(df_grouped_year)
-
-
 @callback(
     Output('yearly-approvals-fig', 'figure'),
     Input('filtered-drug-approvals-data', 'data'),
+    prevent_initial_call=True
 )
 def update_yearly_approvals_fig(data: dict) -> Figure:
     """
@@ -408,7 +407,8 @@ def update_yearly_approvals_fig(data: dict) -> Figure:
 
 @callback(
     Output('drug-type-fig', 'figure'),
-    Input('filtered-drug-approvals-data', 'data')
+    Input('filtered-drug-approvals-data', 'data'),
+    prevent_initial_call=True
 )
 def update_drug_type_fig(data: dict) -> Figure:
     """
@@ -427,6 +427,67 @@ def update_drug_type_fig(data: dict) -> Figure:
     approvals_per_drug_type = approvals_per_drug_type.sort_values(by='total', ascending=False)[:5]
 
     return plot_drug_type(approvals_per_drug_type)
+
+
+# Clientside callback to capture and store the mouse position whenever a hover event is triggered on the drug-type
+# graph. This function updates the `data` property of a `dcc.Store` component (`mouse-position`) with the current
+# mouse coordinates.
+clientside_callback(
+    ClientsideFunction(namespace='clientside', function_name='update_mouse_position'),
+    Output('mouse-position', 'data'),
+    Input('drug-type-fig', 'hoverData'),
+    prevent_initial_call=True
+)
+
+
+@callback(
+    Output('tooltip-drug-type-fig', 'bbox'),
+    Input('mouse-position', 'data'),
+    prevent_initial_call=True
+)
+def update_tooltip_bbox(mouse_pos: dict) -> dict:
+    """
+    Calculates and returns the bounding box for the tooltip based on the mouse position.
+
+    Args:
+        mouse_pos (dict): Dictionary containing mouse coordinates ('x' and 'y').
+
+    Returns:
+        dict: A dictionary specifying the tooltip's bounding box with keys 'x0', 'y0', 'x1', 'y1'.
+    """
+    if mouse_pos:
+        bbox = {
+            "x0": mouse_pos['x'],
+            "y0": mouse_pos['y'],
+            "x1": mouse_pos['x'],
+            "y1": mouse_pos['y'] + 25
+        }
+        return bbox
+
+    return no_update
+
+
+@callback(
+    Output('tooltip-drug-type-fig', 'show'),
+    Output('tooltip-drug-type-fig', 'children'),
+    Input('drug-type-fig', 'hoverData'),
+    prevent_initial_call=True
+)
+def update_tooltip_drug_fig(hover_data: dict) -> tuple:
+    """
+    Updates the tooltip visibility and content based on hover data from the drug-type graph.
+
+    Args:
+        hover_data (dict): Dictionary containing hover data from the drug-type graph.
+
+    Returns:
+        tuple: A tuple containing a boolean to control the tooltip visibility and a string for the tooltip content.
+    """
+
+    if hover_data:
+        return True, make_tooltip_layout(hover_data)
+
+    return False, no_update
 
 
 @callback(

@@ -144,6 +144,11 @@ def plot_drug_type(df: DataFrame) -> Figure:
         margin=WITHOUT_PADDING
     )
 
+    fig_approvals_drug_type.update_traces(
+        hovertemplate=None,
+        hoverinfo='none'
+    )
+
     return fig_approvals_drug_type
 
 
