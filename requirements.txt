@@ -2,4 +2,5 @@ dash==2.16.1
 dash-mantine-components==0.12.0
 dash-iconify==0.1.2
 pandas
+dash-ag-grid==31.0.1
 

@@ -12,6 +12,25 @@ body {
     shape-rendering: auto;
 }
 
+/* Style for the scrollbar itself */
+.ag-theme-material ::-webkit-scrollbar {
+    width: 8px;  /* width of the entire scrollbar */
+    background-color: transparent;  /* scrollbar background */
+}
+
+/* Style for the draggable part of the scrollbar */
+.ag-theme-material ::-webkit-scrollbar-thumb {
+    background-color: #bfbfbf;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+/* Hide scrollbar arrows */
+.ag-theme-material ::-webkit-scrollbar-button {
+    display: none;
+}
+
 /*
 #company-stacked-fig > div.js-plotly-plot > div > div > svg > g.cartesianlayer > g > g.plot > g > g:nth-last-child(1) > g > g > path {
     clip-path: inset(0% 0% 0% 0% round 0.8rem 0.8rem 0 0);
