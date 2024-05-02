@@ -1,0 +1,44 @@
+#yearly-approvals-fig .hoverlayer .bg {
+    rx: 4;
+    shape-rendering: auto;
+}
+
+#company-stacked-fig .hoverlayer .bg {
+    rx: 4;
+    shape-rendering: auto;
+}
+
+/* Style for the scrollbar itself */
+.ag-theme-material ::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+/* Style for the draggable part of the scrollbar */
+.ag-theme-material ::-webkit-scrollbar-thumb {
+    background-color: #bfbfbf;
+    border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+/* Hide scrollbar arrows */
+.ag-theme-material ::-webkit-scrollbar-button {
+    display: none;
+}
+
+.text-underline {
+    position: relative;
+    display: inline-block;
+}
+
+.text-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0px;
+    width: 54%;
+    height: 3px;
+    background-color: #006400;
+}

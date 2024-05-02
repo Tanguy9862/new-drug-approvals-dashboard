@@ -3,4 +3,5 @@ dash-mantine-components==0.12.0
 dash-iconify==0.1.2
 pandas
 dash-ag-grid==31.0.1
-
+dash-extensions==1.0.14
+gunicorn

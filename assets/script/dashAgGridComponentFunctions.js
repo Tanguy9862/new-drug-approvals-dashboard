@@ -1,7 +1,7 @@
 var dagcomponentfuncs = (window.dashAgGridComponentFunctions = window.dashAgGridComponentFunctions || {});
 
 dagcomponentfuncs.DMC_ActionIcon = function (props) {
-    const {setData, data, rowIndex} = props;  // Use data to access row data
+    const {setData, data, rowIndex} = props;
 
     function onClick() {
         setData({

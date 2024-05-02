@@ -2,37 +2,18 @@ body {
     background-color: #F8F8F8;
 }
 
-#yearly-approvals-fig .hoverlayer .bg {
-    rx: 4;
-    shape-rendering: auto;
+h1, h2, h3, p, ul {
+    font-family: Ubuntu, sans-serif;
 }
 
-#company-stacked-fig .hoverlayer .bg {
-    rx: 4;
-    shape-rendering: auto;
+h1 {
+    color: #006400;
 }
 
-/* Style for the scrollbar itself */
-.ag-theme-material ::-webkit-scrollbar {
-    width: 8px;  /* width of the entire scrollbar */
-    background-color: transparent;  /* scrollbar background */
+h2 {
+    color: rgba(0, 0, 0, 0.7);
 }
 
-/* Style for the draggable part of the scrollbar */
-.ag-theme-material ::-webkit-scrollbar-thumb {
-    background-color: #bfbfbf;
-    border-radius: 10px;
-    border: 2px solid transparent;
-    background-clip: content-box;
+p {
+    color: #4B4B4B;
 }
-
-/* Hide scrollbar arrows */
-.ag-theme-material ::-webkit-scrollbar-button {
-    display: none;
-}
-
-/*
-#company-stacked-fig > div.js-plotly-plot > div > div > svg > g.cartesianlayer > g > g.plot > g > g:nth-last-child(1) > g > g > path {
-    clip-path: inset(0% 0% 0% 0% round 0.8rem 0.8rem 0 0);
-}
-*/

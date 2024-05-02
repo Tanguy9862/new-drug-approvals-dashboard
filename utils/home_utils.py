@@ -1,6 +1,8 @@
 from datetime import datetime
+from typing import Optional, List, Dict, Any
 
 import dash_mantine_components as dmc
+from dash.development.base_component import Component
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
@@ -77,34 +79,6 @@ def plot_approvals_year(df: DataFrame) -> Figure:
     return fig
 
 
-# def plot_min_approvals_year(df):
-#
-#     fig = px.line(
-#         df,
-#         x='year',
-#         y='total'
-#     )
-#
-#     fig.update_layout(
-#         margin=WITHOUT_PADDING,
-#         plot_bgcolor=BG_TRANSPARENT,
-#         paper_bgcolor=BG_TRANSPARENT,
-#         xaxis=dict(title=None, showgrid=False, visible=False),
-#         yaxis=dict(title=None, showgrid=False, visible=False),
-#     )
-#
-#     fig.update_traces(
-#         fill='tozeroy',
-#         fillcolor='rgba(0,0,0,0.1)',
-#         line_shape='spline',
-#         line=dict(color='rgba(0,0,0,0.1)', width=0),
-#         hovertemplate=None,
-#         hoverinfo='none'
-#     )
-#
-#     return fig
-
-
 def plot_drug_type(df: DataFrame) -> Figure:
     """
     Creates a bar chart showing the top 5 drug types based on the number of approvals.
@@ -116,7 +90,7 @@ def plot_drug_type(df: DataFrame) -> Figure:
         Figure: A Plotly figure object for the bar chart.
     """
 
-    healthcare_pastel_palette = [
+    pastel_palette = [
         '#88D9E6',
         '#97D8B2',
         '#FFC4C4',
@@ -130,7 +104,7 @@ def plot_drug_type(df: DataFrame) -> Figure:
         hole=0.7,
         pull=[0.05] * len(df),
         textinfo='none',
-        marker=dict(colors=healthcare_pastel_palette),
+        marker=dict(colors=pastel_palette),
     )])
 
     fig_approvals_drug_type.update_layout(
@@ -199,3 +173,29 @@ def plot_stacked_item_company(df: pd.DataFrame, item_type: str, companies_sorted
     )
 
     return fig
+
+
+def add_loading_overlay(elements: Optional[List[Component]] = None, id: str = '', **kwargs) -> dmc.LoadingOverlay:
+    """
+    Wraps provided elements with a loading overlay, which shows a loading animation when active.
+
+    Args:
+        elements (Optional[List[Component]]): List of Dash components to be wrapped by the loading overlay.
+        id (str): The unique identifier for the loading overlay component.
+        **kwargs: Additional keyword arguments, specifically looking for 'extra_styles' to apply custom
+        styles to the overlay.
+
+    Returns:
+        dmc.LoadingOverlay: A Dash Mantine Component LoadingOverlay object that displays a loading animation
+        over the provided elements.
+    """
+
+    return dmc.LoadingOverlay(
+        children=elements,
+        loaderProps={'color': '#009900', 'variant': 'dots'},
+        overlayColor='white',
+        overlayOpacity=0.7,
+        radius=6,
+        style=kwargs.get('extra_styles', {}),
+        id=id
+    )

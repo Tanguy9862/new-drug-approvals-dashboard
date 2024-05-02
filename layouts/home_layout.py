@@ -236,6 +236,7 @@ def make_modal() -> dmc.Modal:
                 'body': {'margin-top': '25px'},
                 'modal': {
                     'background': 'linear-gradient(to bottom, #82c7a5 0%, #ffffff 100%)',
+                    # 'background': 'linear-gradient(to bottom, #a8e6cf 0%, #ffffff 100%)',
                     'border-radius': '15px'
                 },
                 'close': {'margin-top': '-50px', 'color': 'grey'}

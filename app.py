@@ -4,7 +4,19 @@ from dash import html
 
 app = dash.Dash(
     __name__,
-    title='New Drug Approvals',
+    meta_tags=[
+        {
+            'name': 'description',
+            'content': 'Explore comprehensive visualizations of global drug approval data. This dashboard offers '
+                       'interactive analysis tools to delve into drug approvals by category, company, and treatment '
+                       'types, using data sourced from recognized global health databases.'
+        },
+        {
+            'name': 'keywords',
+            'content': 'drug approvals, pharmaceuticals, healthcare data, interactive dashboard, data visualization, '
+                       'global health, drug categories, treatment types'
+        }
+    ],
     external_stylesheets=[
         'https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap',
         'https://fonts.googleapis.com/css2?family=Anek+Devanagari:wght@100..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap'

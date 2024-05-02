@@ -1,19 +1,21 @@
+from typing import List, Dict, Tuple
+
 import dash
 from dash import dcc, html, callback, Input, Output, State, no_update, clientside_callback, ClientsideFunction
 from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
+import dash_ag_grid as dag
 import pandas as pd
-from dash_iconify import DashIconify
 from plotly.graph_objs import Figure
-import plotly.express as px
-import plotly.graph_objs as go
+
+from assets.header import header
 
 from utils.home_utils import (
     drug_approvals_df,
     plot_approvals_year,
-    # plot_min_approvals_year,
     plot_drug_type,
     plot_stacked_item_company,
+    add_loading_overlay,
     MIN_YEAR,
     MAX_YEAR,
     CURRENT_YEAR,
@@ -23,7 +25,8 @@ from utils.home_utils import (
 from layouts.home_layout import (
     make_container,
     assemble_kpi_panel,
-    make_tooltip_layout
+    make_tooltip_layout,
+    make_modal
 )
 
 from utils.config import (
@@ -36,58 +39,82 @@ dash.register_page(
     __name__,
     path='/',
     order=1,
-    title="Overview",
-    description="",
-    image=""
+    title='Pharmaceutical Drug Approvals Dashboard',
+    description='A comprehensive visualization of global drug approval data, featuring interactive charts and '
+                'real-time updates. This dashboard provides insights into drug approvals by category, company, '
+                'and treatment types, drawing on extensive data collected from public health sources.',
+    image="miniature.png"
 )
 
 from datetime import datetime
-c_time = datetime.utcnow()
 
+# print(drug_approvals_df['Company'].sort_values(ascending=False).drop_duplicates())
+# dummy = drug_approvals_df.query('Company == "2014-09-05"')
+# print(dummy)
+
+c_time = datetime.utcnow()
 
 layout = html.Div(
     [
         dcc.Store(data=drug_approvals_df.to_dict('records'), id='drug-approvals-data'),
         dcc.Store(data=None, id='filtered-drug-approvals-data'),
         dcc.Store(id='mouse-position'),
+        make_modal(),
         dmc.Grid(
             [
                 dmc.Col(
                     [
-                        dmc.Title(
-                            'Annual Drug Approval Overview',
-                            order=3,
-                            align='justify',
-                            style={
-                                'font-family': 'Roboto, Sans Serif',
-                                'font-weight': '300'
-                            }
+                        dmc.Group(
+                            [
+                                dmc.Group(
+                                    [
+                                        dmc.Title(
+                                            'Drug Approval Overview for',
+                                            order=3,
+                                            align='justify',
+                                            style={
+                                                'font-family': 'Roboto, Sans Serif',
+                                                'font-weight': '300'
+                                            }
 
+                                        ),
+                                        dmc.NumberInput(
+                                            label=None,
+                                            id='year-input',
+                                            value=CURRENT_YEAR,
+                                            min=MIN_YEAR,
+                                            max=MAX_YEAR,
+                                            p=0,
+                                            mt=-3,
+                                            style={"width": "90px"},
+                                            styles={
+                                                'input': {
+                                                    'background-color': '#F8F8F8',
+                                                    'padding-left': '0',
+                                                    'border': 'none',
+                                                    'font-size': '1.375rem',
+                                                    'font-weight': '300',
+                                                    'font-family': 'Roboto, Sans Serif',
+                                                },
+                                                'control': {'border': 'none'}
+                                            },
+                                            className='text-underline'
+                                        )
+                                    ],
+                                    position='left',
+                                    spacing=7
+                                ),
+                                header
+                            ],
+                            position='apart'
                         )
                     ],
                     offsetMd=1,
-                    md=4
-                ),
-                dmc.Col(
-                    [
-                        dmc.Group(
-                            [
-                                dmc.NumberInput(
-                                    label=None,
-                                    id='year-input',
-                                    value=CURRENT_YEAR,
-                                    min=MIN_YEAR,
-                                    max=MAX_YEAR,
-                                    style={"width": 250}
-                                )
-                            ]
-                        )
-                    ],
-                    md=5
+                    md=10
                 )
             ],
             mt='md',
-            mb=MARGIN_BOTTOM
+            mb=20
         ),
         dmc.Grid(
             [
@@ -114,6 +141,7 @@ layout = html.Div(
                                                             'approvals',
                                                             transform='uppercase',
                                                             color='white',
+                                                            m=0,
                                                             style={
                                                                 'font-size': '0.85rem'
                                                             }
@@ -126,30 +154,39 @@ layout = html.Div(
                                             px=0,
                                             style={
                                                 'background': 'linear-gradient(135deg, #3c8d5d 0%, #c8e6c9 100%)',
-                                                # 'border': 'solid 1px #49aa39',
                                                 'border-radius': '10px',
                                                 'height': '100%',
-                                                'position': 'relative'
+                                                'display': 'flex',
+                                                'flex-direction': 'column',
+                                                'justify-content': 'center'
                                             }
                                         )
                                     ],
-                                    md=2
+                                    xl=2
                                 ),
-                                dmc.Col(
-                                    [
-                                        make_container(
-                                            children=[
-                                                dmc.Grid(
-                                                    [
-                                                        assemble_kpi_panel(item) for item in kpi_items
-                                                    ]
-                                                )
-                                            ],
-                                            style_height='75px'
-                                        )
-                                    ],
-                                    md=10
-                                )
+                                *[
+                                    dmc.Col(
+                                        [
+                                            make_container(
+                                                children=[
+                                                    dmc.Center(
+                                                        [assemble_kpi_panel(item)]
+                                                    )
+                                                ],
+                                                extra_styles={
+                                                    'display': 'flex',
+                                                    'flex-direction': 'column',
+                                                    'justify-content': 'center',
+                                                    'align-items': 'center'
+                                                },
+                                                pl=0,
+                                                pt=0,
+                                                style_height='100%'
+                                            )
+                                        ],
+                                        xl=2.5
+                                    ) for item in kpi_items
+                                ]
                             ],
                             mb=MARGIN_BOTTOM
                         ),
@@ -163,21 +200,29 @@ layout = html.Div(
                                                     children=[
                                                         'Total Approvals'
                                                     ],
+                                                    id='total-approvals-title',
                                                     size='sm',
                                                     mb='lg'
                                                 ),
-                                                dcc.Graph(
-                                                    id='yearly-approvals-fig',
-                                                    figure={},
-                                                    style={'height': '250px', 'width': '95%', 'margin-left': '10px'},
-                                                    config=FIG_CONFIG,
-                                                    responsive=True
+                                                add_loading_overlay(
+                                                    elements=[
+                                                        dcc.Graph(
+                                                            id='yearly-approvals-fig',
+                                                            figure=plot_approvals_year(
+                                                                pd.DataFrame(columns=['Date of Approval', 'total'])
+                                                            ),
+                                                            style={'height': '250px', 'width': '95%',
+                                                                   'margin-left': '10px'},
+                                                            config=FIG_CONFIG,
+                                                            responsive=True
+                                                        )
+                                                    ]
                                                 )
                                             ],
                                             style_height='300px'
                                         )
                                     ],
-                                    span=8
+                                    lg=8
                                 ),
                                 dmc.Col(
                                     [
@@ -190,12 +235,19 @@ layout = html.Div(
                                                     size='sm',
                                                     mb='sm',
                                                 ),
-                                                dcc.Graph(
-                                                    id='drug-type-fig',
-                                                    config=FIG_CONFIG,
-                                                    style={'height': '250px'},
-                                                    clear_on_unhover=True,
-                                                    responsive=True
+                                                add_loading_overlay(
+                                                    elements=[
+                                                        dcc.Graph(
+                                                            id='drug-type-fig',
+                                                            figure=plot_drug_type(
+                                                                df=pd.DataFrame(columns=['drug_type', 'total'])
+                                                            ),
+                                                            config=FIG_CONFIG,
+                                                            style={'height': '250px'},
+                                                            clear_on_unhover=True,
+                                                            responsive=True
+                                                        )
+                                                    ]
                                                 ),
                                                 dcc.Tooltip(
                                                     id='tooltip-drug-type-fig',
@@ -219,7 +271,7 @@ layout = html.Div(
                                             style_height='300px',
                                         )
                                     ],
-                                    span=4
+                                    lg=4
                                 )
                             ],
                             mb=MARGIN_BOTTOM
@@ -265,11 +317,21 @@ layout = html.Div(
                                                     ],
                                                     position='apart'
                                                 ),
-                                                dcc.Graph(
-                                                    id='company-stacked-fig',
-                                                    config=FIG_CONFIG,
-                                                    responsive=True,
-                                                    style={'height': '75%', 'margin-top': '30px'}
+                                                add_loading_overlay(
+                                                    [
+                                                        dcc.Graph(
+                                                            id='company-stacked-fig',
+                                                            config=FIG_CONFIG,
+                                                            figure=plot_stacked_item_company(
+                                                                df=pd.DataFrame(columns=['total', 'Company', 'drug_type']),
+                                                                item_type='drug_type',
+                                                                companies_sorted=list()
+                                                            ),
+                                                            responsive=True,
+                                                            style={'height': '75%', 'margin-top': '30px'}
+                                                        )
+                                                    ],
+                                                    extra_styles={'height': '75%'}
                                                 )
                                             ],
                                             style_height='322px'
@@ -287,9 +349,30 @@ layout = html.Div(
                     [
                         make_container(
                             children=[
-                                dmc.Text('Recent Approvals')
+                                dmc.Text(None, mb='lg', id='approved-drugs-title', pt=20, pl=25),
+                                dmc.Container(
+                                    [
+                                        dag.AgGrid(
+                                            id='approvals-grid-data',
+                                            className='ag-theme-material',
+                                            style={'height': '100%', 'width': '90%'},
+                                            columnSize='sizeToFit',
+                                            dashGridOptions={'suppressMovableColumns': True},
+                                            defaultColDef={'resizable': False},
+                                        )
+                                    ],
+                                    px=0,
+                                    style={
+                                        'display': 'flex',
+                                        'justify-content': 'center',
+                                        'align-items': 'center',
+                                        'height': '88%',
+                                        'width': '100%'
+                                    }
+                                )
                             ],
-                            style_height='85vh'
+                            pt=0, pl=0,
+                            style_height='82.8vh'
                         )
                     ],
                     md=3,
@@ -302,10 +385,12 @@ layout = html.Div(
 
 @callback(
     Output('filtered-drug-approvals-data', 'data'),
+    Output('total-approvals-title', 'children'),
+    Output('approved-drugs-title', 'children'),
     Input('year-input', 'value'),
     State('drug-approvals-data', 'data')
 )
-def update_drug_approvals_data(year: int, data: dict) -> list:
+def update_drug_approvals_data(year: int, data: dict) -> tuple[list[dict], str, str]:
     """
     Filters drug approvals data based on the selected year and converts it to a dictionary suitable for Dash components.
 
@@ -314,12 +399,15 @@ def update_drug_approvals_data(year: int, data: dict) -> list:
         data (dict): The original drug approvals data..
 
     Returns:
-        list: A list of dictionaries representing the filtered drug approvals data.
+        tuple[list[dict], str, str]:
+            - A list of dictionaries representing the filtered drug approvals data for the selected year.
+            - A formatted string indicating the total number of approvals for the selected year.
+            - A formatted string indicating the title for the list of approved drugs in the selected year.
     """
 
     df = pd.DataFrame(data)
     df_filtered = df.query('year == @year')
-    return df_filtered.to_dict('records')
+    return df_filtered.to_dict('records'), f'Total Approvals in {year}', f'Approved Drugs in {year}'
 
 
 @callback(
@@ -355,8 +443,8 @@ def update_count_total_approvals(data: dict, year: int) -> int:
 )
 def update_kpi_panel(data):
     df = pd.DataFrame(data)
-
     all_kpis = []
+
     for col in ['Company', 'disease_type', 'drug_type']:
         top_item = df.groupby(col).size().reset_index(name='total').sort_values(by='total', ascending=False)
         top_item_name = top_item.iloc[0][col]
@@ -365,9 +453,25 @@ def update_kpi_panel(data):
                 if suffix in top_item_name:
                     top_item_name = top_item_name.replace(suffix, '')
                     break
-        split_name = top_item_name.split()
-        if len(split_name) > 1:
-            top_item_name = f'{split_name[0]} {split_name[1][:5]}.'
+
+        if 'Reproductive' in top_item_name:
+            top_item_name = dmc.Tooltip(
+                ['Reprod. Sys.'],
+                label=top_item_name,
+                transition='fade',
+                position='bottom',
+                withArrow=True
+            )
+
+        elif len(top_item_name.split()) > 1:
+            split_name = top_item_name.split()
+            top_item_name = dmc.Tooltip(
+                [f'{split_name[0]} {split_name[1][:5 if col != "Company" else 4]}.'],
+                label=top_item_name,
+                transition='fade',
+                position='bottom',
+                withArrow=True
+            )
 
         all_kpis.append(top_item_name)
 
@@ -523,3 +627,135 @@ def update_stacked_fig(data: dict, item_type: str, n_companies: int) -> Figure:
         item_type=item_type,
         companies_sorted=companies_sorted
     )
+
+
+@callback(
+    Output('approvals-grid-data', 'rowData'),
+    Output('approvals-grid-data', 'columnDefs'),
+    Input('filtered-drug-approvals-data', 'data')
+)
+def update_grid_approvals(data: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
+    """
+    Updates the data and column definitions for an Ag-Grid component in a Dash application.
+
+    This callback fetches updated drug approval data and configures the grid to display this data.
+    It also defines how the 'Details' column should render using a custom Dash-Mantine component for interactivity.
+
+    Args:
+        data (List[Dict]): List of dictionaries where each dictionary contains data of a single drug approval.
+
+    Returns:
+        Tuple[List[Dict], List[Dict]]: A tuple where the first element is the list of records for the grid's rowData
+        and the second element is the list of dictionaries defining column properties for the grid.
+    """
+
+    df = pd.DataFrame(data)
+
+    # Initialize 'Details' column to prepare for interactive elements
+    df['Details'] = ''
+
+    # Filter the DataFrame to ensure it's sorted by date and duplicates are removed
+    cols = ['Date of Approval', 'drug_name', 'Details']
+    filtered_df = df[cols].sort_values(by='Date of Approval', ascending=False).drop_duplicates()
+    filtered_df['Date of Approval'] = filtered_df['Date of Approval'].str.split('T').str[0]
+
+    # Set up column definitions for the grid, including custom renderers for interactive functionality
+    column_defs = [
+        {
+            'headerName': 'Date',
+            'field': 'Date of Approval',
+        },
+        {
+            'headerName': 'Drug Name',
+            'field': 'drug_name',
+        },
+        {
+            'field': 'Details',
+            'cellRenderer': 'DMC_ActionIcon',
+            'cellRendererParams': {
+                'icon': 'f7:ellipsis-circle-fill',
+                'iconColor': '#bfbfbf',
+                'iconWidth': '20',
+                'iconHeight': '20',
+                'variant': 'subtle',
+                'marginTop': '8px',
+                'marginLeft': '6px',
+            }
+        },
+    ]
+
+    return filtered_df.to_dict('records'), column_defs
+
+
+@callback(
+    Output('modal-detailed-drug', 'opened'),
+    Output('modal-detailed-drug', 'title'),
+    Output('badge-disease-type', 'children'),
+    Output('badge-drug-type', 'children'),
+    Output('badge-mode-administration', 'children'),
+    Output('drug-description', 'children'),
+    Output('modal-treatment-for', 'children'),
+    Output('modal-company', 'children'),
+    Input('approvals-grid-data', 'cellRendererData'),
+    State('modal-detailed-drug', 'opened'),
+    State('filtered-drug-approvals-data', 'data'),
+    prevent_initial_call=True
+)
+def toggle_modal_drug(
+        clicked_grid_data: dict,
+        opened: bool,
+        approvals_data: list
+) -> tuple:
+    """
+    Toggles the drug detail modal, updates the content based on the clicked row in the drug approvals grid.
+
+    Args:
+        clicked_grid_data (dict): Data containing the clicked row information, such as drug name and date of approval.
+        opened (bool): Current state of the modal, whether it is open or closed.
+        approvals_data (list): List of dictionaries representing the drug approvals data.
+
+    Returns:
+        tuple: Returns multiple outputs to update the state of the modal and its content. This includes:
+               - Modal open/close state.
+               - Modal title.
+               - Disease type, drug type, and mode of administration as badges.
+               - Drug description.
+               - Treatment information.
+               - Company information.
+    """
+
+    # Extracting necessary details from clicked grid data
+    drug_name = clicked_grid_data['value']['drugName']
+    approval_date = clicked_grid_data['value']['dateApproval']
+
+    # Filtering the DataFrame for the selected drug based on drug name and approval date
+    if drug_name:
+        df = pd.DataFrame(approvals_data)
+        df_filtered = df.query(
+            'drug_name == @drug_name and `Date of Approval`.str.startswith(@approval_date)').drop_duplicates().iloc[0]
+
+        # Preparing the modal title with drug name and generic name
+        modal_title = [
+            drug_name,
+            dmc.Text(
+                df_filtered['drug_generic_name'] or '-',
+                size=15,
+                style={'font-style': 'italic'}
+            )
+        ]
+        # Generating badges for disease type, drug type, and mode of administration
+        all_badges = [
+            df_filtered['disease_type'] or '-',
+            df_filtered['drug_type'] or '-',
+            df_filtered['mode_administration'] or '-'
+        ]
+
+        # Setting the drug description or a default message if none is available
+        description_drug = df_filtered['description'] or 'No description provided for this medication.'
+
+        # Setting treatment and company information for the footer of the modal
+        footer_modal = [df_filtered['Treatment for'] or '-', df_filtered['Company'] or '-']
+
+        return not opened, modal_title, *all_badges, description_drug, *footer_modal
+
+    raise PreventUpdate
