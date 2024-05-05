@@ -1,7 +1,12 @@
 dash==2.16.1
 dash-mantine-components==0.12.0
 dash-iconify==0.1.2
-pandas
+pandas~=2.2.2
 dash-ag-grid==31.0.1
 dash-extensions==1.0.14
 gunicorn
+plotly~=5.21.0
+google-cloud-secret-manager
+gcsfs~=2024.3.1
+flask~=3.0.3
+python-dotenv~=1.0.1

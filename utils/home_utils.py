@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 
 import dash_mantine_components as dmc
 from dash.development.base_component import Component
@@ -9,26 +8,14 @@ import plotly.graph_objs as go
 from plotly.graph_objs import Figure
 from pandas import DataFrame
 
-from utils.config import (
+from config import (
     WITHOUT_PADDING,
     BG_TRANSPARENT,
     HOVERLABEL_TEMPLATE,
 )
 
-# DATA
-pd.set_option('display.max_columns', None)
-pd.set_option('display.max_rows', None)
-
-drug_approvals_df = pd.read_csv('new_drug_approvals.csv').drop(['Unnamed: 9', 'Unnamed: 10', 'Unnamed: 11'], axis=1)
-drug_approvals_df['Date of Approval'] = pd.to_datetime(drug_approvals_df['Date of Approval'], errors='coerce')
-drug_approvals_df['year'] = drug_approvals_df['Date of Approval'].dt.year
-# df['months'] = df['Date of Approval'].dt.month
-# df['test'] = df['Date of Approval'].dt.to_period('M')
-# print(df['test'].head(25))
-
-# CONSTANTES
+# Define constants
 MARGIN_BOTTOM = 7
-MIN_YEAR, MAX_YEAR, CURRENT_YEAR = drug_approvals_df['year'].min(), drug_approvals_df['year'].max(), datetime.now().year
 
 
 def plot_approvals_year(df: DataFrame) -> Figure:

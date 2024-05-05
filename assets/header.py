@@ -29,7 +29,7 @@ def modal_data_source():
                     
                     Our drug approval data is derived from the comprehensive and up-to-date listings available at 
                     [Drugs.com](https://www.drugs.com/newdrugs-archive/{CURRENT_YEAR}.html), which includes detailed information on newly approved drugs spanning various years. We 
-                    have automated our scraping process to run autonomously twice daily, every 12 hours, ensuring our 
+                    have automated our scraping process to run autonomously every 6 hours, ensuring our 
                     database consistently reflects the most current data. This relentless automation guarantees that 
                     any updates or new entries on the Drugs.com archive are immediately captured and updated in our 
                     database.

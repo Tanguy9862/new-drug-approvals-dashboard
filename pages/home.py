@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 import dash
 from dash import dcc, html, callback, Input, Output, State, no_update, clientside_callback, ClientsideFunction
@@ -6,19 +6,16 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 import dash_ag_grid as dag
 import pandas as pd
+import gcsfs
 from plotly.graph_objs import Figure
 
 from assets.header import header
 
 from utils.home_utils import (
-    drug_approvals_df,
     plot_approvals_year,
     plot_drug_type,
     plot_stacked_item_company,
     add_loading_overlay,
-    MIN_YEAR,
-    MAX_YEAR,
-    CURRENT_YEAR,
     MARGIN_BOTTOM
 )
 
@@ -29,10 +26,13 @@ from layouts.home_layout import (
     make_modal
 )
 
-from utils.config import (
+from config import (
     FIG_CONFIG,
     KPI_ITEMS as kpi_items,
-    SUFFIXES_TO_DELETE
+    SUFFIXES_TO_DELETE,
+    BUCKET_NAME,
+    FILENAME_UPDATE,
+    PROJECT_NAME
 )
 
 dash.register_page(
@@ -46,17 +46,9 @@ dash.register_page(
     image="miniature.png"
 )
 
-from datetime import datetime
-
-# print(drug_approvals_df['Company'].sort_values(ascending=False).drop_duplicates())
-# dummy = drug_approvals_df.query('Company == "2014-09-05"')
-# print(dummy)
-
-c_time = datetime.utcnow()
-
 layout = html.Div(
     [
-        dcc.Store(data=drug_approvals_df.to_dict('records'), id='drug-approvals-data'),
+        dcc.Store(data=None, id='drug-approvals-data'),
         dcc.Store(data=None, id='filtered-drug-approvals-data'),
         dcc.Store(id='mouse-position'),
         make_modal(),
@@ -81,9 +73,6 @@ layout = html.Div(
                                         dmc.NumberInput(
                                             label=None,
                                             id='year-input',
-                                            value=CURRENT_YEAR,
-                                            min=MIN_YEAR,
-                                            max=MAX_YEAR,
                                             p=0,
                                             mt=-3,
                                             style={"width": "90px"},
@@ -358,7 +347,7 @@ layout = html.Div(
                                             style={'height': '100%', 'width': '90%'},
                                             columnSize='sizeToFit',
                                             dashGridOptions={'suppressMovableColumns': True},
-                                            defaultColDef={'resizable': False},
+                                            defaultColDef={'width': 128, 'resizable': False},
                                         )
                                     ],
                                     px=0,
@@ -441,19 +430,32 @@ def update_count_total_approvals(data: dict, year: int) -> int:
     Input('filtered-drug-approvals-data', 'data'),
     prevent_initial_call=True
 )
-def update_kpi_panel(data):
+def update_kpi_panel(data: List[Dict[str, Any]]) -> tuple[Any, str | Any]:
+    """
+    Processes drug approval data to update KPIs for display in the dashboard.
+
+    Args:
+        data (List[Dict[str, Any]]): The data from the client-side store that includes drug approvals.
+
+    Returns:
+        Tuple containing KPI values for the top company, main focus, leading drug class, and the last updated timestamp.
+    """
     df = pd.DataFrame(data)
     all_kpis = []
 
+    # Process top items for each KPI
     for col in ['Company', 'disease_type', 'drug_type']:
         top_item = df.groupby(col).size().reset_index(name='total').sort_values(by='total', ascending=False)
         top_item_name = top_item.iloc[0][col]
+
+        # Clean up disease_type names by removing specified suffixes
         if col == 'disease_type':
             for suffix in SUFFIXES_TO_DELETE:
                 if suffix in top_item_name:
                     top_item_name = top_item_name.replace(suffix, '')
                     break
 
+        # Creates a tooltip for names that are too long or need additional context for display.
         if 'Reproductive' in top_item_name:
             top_item_name = dmc.Tooltip(
                 ['Reprod. Sys.'],
@@ -475,10 +477,16 @@ def update_kpi_panel(data):
 
         all_kpis.append(top_item_name)
 
-    # !!! REMPLACER PAR HEURE RECUPEREE VIA GCS !!!!
-    abbreviated_time = c_time.strftime('%y-%m-%d %H:%M')
+    # Read last updated time from Google Cloud Storage
+    try:
+        fs = gcsfs.GCSFileSystem(project=PROJECT_NAME)
+        file_path = f'gs://{BUCKET_NAME}/{FILENAME_UPDATE}'
+        with fs.open(file_path, 'r') as f:
+            last_update = f.read()
+    except Exception as e:
+        last_update = 'LOCAL MODE'
 
-    return *all_kpis, abbreviated_time
+    return *all_kpis, last_update
 
 
 @callback(
@@ -632,7 +640,8 @@ def update_stacked_fig(data: dict, item_type: str, n_companies: int) -> Figure:
 @callback(
     Output('approvals-grid-data', 'rowData'),
     Output('approvals-grid-data', 'columnDefs'),
-    Input('filtered-drug-approvals-data', 'data')
+    Input('filtered-drug-approvals-data', 'data'),
+    prevent_initial_callback=True
 )
 def update_grid_approvals(data: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
     """
