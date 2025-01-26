@@ -7,13 +7,7 @@ DEFAULT_ENVIRONMENT = 'local'
 DATA_DIRECTORY_NAME = 'data'
 NEW_DRUG_APPROVALS_FILENAME = 'new_drug_approvals.csv'
 
-# GCP Configuration (if running in a GCP environment)
-GCP_PROJECT_ID = 'new-drug-approvals'
-GCP_BUCKET_NAME = 'new-drug-approvals-bucket'
-GCP_SECRET_NAME = 'new-drug-approvals-config'  # The name of the secret in GCP Secret Manager, used to store the
-# environment configuration (e.g., ENV=gcp)
-
-# Local configuration to access GCP resources (only for development/testing)
-# This sets the path to the service account key JSON file for authentication.
-# If None, GCP authentication will rely on the default application credentials (ADC).
-# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = 'new-drug-approvals-4093ccdb6f83.json' or None
+# AWS Configuration (if running in an AWS environment)
+AWS_BUCKET_NAME = 'app-new-drug-approvals-bucket'
+AWS_SECRET_NAME = 'app-new-drug-approvals/environment-config'
+AWS_REGION_NAME = 'us-east-1'

@@ -1,8 +1,8 @@
 import os
 from dotenv import load_dotenv
 from typing import Optional
-from user_config import GCP_SECRET_NAME, GCP_PROJECT_ID
-from utils.gcp_secrets_manager import get_secret_from_gcp
+from user_config import AWS_SECRET_NAME, AWS_REGION_NAME
+from utils.aws_secrets_manager import get_secret_from_aws
 
 # Load .env file for local environments
 load_dotenv()
@@ -27,10 +27,10 @@ def get_env_variable(var_name: str, default: Optional[str] = None) -> str:
     if value:
         return value
 
-    # Step 3: Check GCP Secret Manager
-    gcp_secrets = get_secret_from_gcp(secret_name=GCP_SECRET_NAME, project_id=GCP_PROJECT_ID)
-    if gcp_secrets and var_name in gcp_secrets:
-        return gcp_secrets[var_name]
+    # Step 2: Check AWS Secrets Manager
+    aws_secrets = get_secret_from_aws(secret_name=AWS_SECRET_NAME, region_name=AWS_REGION_NAME)
+    if aws_secrets and var_name in aws_secrets:
+        return aws_secrets[var_name]
 
     # Step 4: Use default value if available
     if default:
