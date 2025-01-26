@@ -375,7 +375,7 @@ layout = html.Div(
     Input('year-input', 'value'),
     State('drug-approvals-data', 'data')
 )
-def update_drug_approvals_data(year: int, data: dict) -> tuple[list[dict], str, str]:
+def update_drug_approvals_data(year: int, data: dict) -> Tuple[list[dict], str, str]:
     """
     Filters drug approvals data based on the selected year and converts it to a dictionary suitable for Dash components.
 
