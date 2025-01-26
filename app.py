@@ -10,7 +10,7 @@ from utils.loading_data import load_data
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-app = dash.Dash(cd
+app = dash.Dash(
     __name__,
     title='Pharmaceutical Drug Approvals Dashboard',
     meta_tags=[
