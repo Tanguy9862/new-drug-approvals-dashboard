@@ -1,14 +1,21 @@
 import logging
-from datetime import  datetime
-from typing import Any
-
 import dash
 import pandas as pd
+from datetime import datetime
+from typing import Any
+
 from dash import dcc, html, callback, Input, Output
 from utils.loading_data import load_data
+from config import CONFIG
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    force=True
+)
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.info(f"Environment chosen: {CONFIG.ENV}")
+
 
 app = dash.Dash(
     __name__,
