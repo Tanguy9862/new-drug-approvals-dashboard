@@ -6,7 +6,6 @@ from dash.exceptions import PreventUpdate
 import dash_mantine_components as dmc
 import dash_ag_grid as dag
 import pandas as pd
-import gcsfs
 from plotly.graph_objs import Figure
 
 from assets.header import header
@@ -26,13 +25,10 @@ from layouts.home_layout import (
     make_modal
 )
 
-from config import (
+from layout_constants import (
     FIG_CONFIG,
     KPI_ITEMS as kpi_items,
     SUFFIXES_TO_DELETE,
-    BUCKET_NAME,
-    FILENAME_UPDATE,
-    PROJECT_NAME
 )
 
 dash.register_page(
@@ -428,9 +424,10 @@ def update_count_total_approvals(data: dict, year: int) -> int:
     Output('leading-class-kpi', 'children'),
     Output('last-updated-kpi', 'children'),
     Input('filtered-drug-approvals-data', 'data'),
+    State('drug-approvals-last-update', 'data'),
     prevent_initial_call=True
 )
-def update_kpi_panel(data: List[Dict[str, Any]]) -> tuple[Any, str | Any]:
+def update_kpi_panel(data: List[Dict[str, Any]], last_update) -> tuple[Any, str | Any]:
     """
     Processes drug approval data to update KPIs for display in the dashboard.
 
@@ -476,15 +473,6 @@ def update_kpi_panel(data: List[Dict[str, Any]]) -> tuple[Any, str | Any]:
             )
 
         all_kpis.append(top_item_name)
-
-    # Read last updated time from Google Cloud Storage
-    try:
-        fs = gcsfs.GCSFileSystem(project=PROJECT_NAME)
-        file_path = f'gs://{BUCKET_NAME}/{FILENAME_UPDATE}'
-        with fs.open(file_path, 'r') as f:
-            last_update = f.read()
-    except Exception as e:
-        last_update = 'LOCAL MODE'
 
     return *all_kpis, last_update
 

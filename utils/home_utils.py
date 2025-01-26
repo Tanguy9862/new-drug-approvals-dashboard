@@ -8,7 +8,7 @@ import plotly.graph_objs as go
 from plotly.graph_objs import Figure
 from pandas import DataFrame
 
-from config import (
+from layout_constants import (
     WITHOUT_PADDING,
     BG_TRANSPARENT,
     HOVERLABEL_TEMPLATE,

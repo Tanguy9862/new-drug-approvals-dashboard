@@ -4,13 +4,13 @@ from typing import Any
 
 import dash
 import pandas as pd
-from dash import html, callback, Input, Output
+from dash import dcc, html, callback, Input, Output
+from utils.loading_data import load_data
 
-from config import BUCKET_NAME, FILENAME
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-app = dash.Dash(
+app = dash.Dash(cd
     __name__,
     title='Pharmaceutical Drug Approvals Dashboard',
     meta_tags=[
@@ -39,6 +39,7 @@ server = app.server
 
 app.layout = html.Div(
     [
+        dcc.Store(id='drug-approvals-last-update'),
         dash.page_container
     ]
 )
@@ -46,6 +47,7 @@ app.layout = html.Div(
 
 @callback(
     Output('drug-approvals-data', 'data'),
+    Output('drug-approvals-last-update', 'data'),
     Output('year-input', 'min'),
     Output('year-input', 'max'),
     Output('year-input', 'value'),
@@ -66,16 +68,7 @@ def load_drug_approvals_data(_: Any) -> tuple[list[dict], Any]:
         - Maximum year of approval for setting the range of a year input slider.
         - Current year for setting the default value of a year input slider.
     """
-    try:
-        # Attempt to load data from Google Cloud Storage
-        gcs_path = f'gs://{BUCKET_NAME}/{FILENAME}'
-        df = pd.read_csv(gcs_path)
-    except Exception as e:
-        # Fallback to loading data from a local file if GCS is unreachable
-        df = pd.read_csv(FILENAME)
-        logging.info("Data loaded from the local file.")
-    else:
-        logging.info("Data loaded from Google Cloud Storage.")
+    df, last_update = load_data('NEW_DRUG_APPROVALS_FILENAME', 'csv')
 
     df['Date of Approval'] = pd.to_datetime(df['Date of Approval'], errors='coerce')
     df['year'] = df['Date of Approval'].dt.year
@@ -86,7 +79,7 @@ def load_drug_approvals_data(_: Any) -> tuple[list[dict], Any]:
         datetime.now().year
     ]
 
-    return df.to_dict('records'), *year_boundaries
+    return df.to_dict('records'), last_update, *year_boundaries
 
 
 if __name__ == "__main__":

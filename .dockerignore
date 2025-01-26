@@ -2,7 +2,9 @@ Dockerfile
 Dockerfile.scraper
 new_drug_approvals.csv
 .env
-new-drug-approvals-c2228690de9f.json
+venv/
+.idea/
+new-drug-approvals-4093ccdb6f83.json
 README.md
 *.pyc
 *.pyo
