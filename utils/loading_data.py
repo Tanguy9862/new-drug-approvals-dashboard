@@ -36,7 +36,7 @@ def load_data(data_type: str, file_type: str):
 
         try:
             response = s3.get_object(Bucket=CONFIG.BUCKET_NAME, Key=filename)
-            last_update = f"{response['LastModified'].strftime('%Y-%m-%d %H:%M:%S')} UTC"
+            last_update = f"{response['LastModified'].strftime('%Y-%m-%d %H:%M')}"
             if file_type == 'json':
                 data = json.load(response['Body'])
             else:
