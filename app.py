@@ -60,7 +60,7 @@ app.layout = html.Div(
     Output('year-input', 'value'),
     Input('drug-approvals-data', 'input')
 )
-def load_drug_approvals_data(_: Any) -> tuple[list[dict], Any]:
+def load_drug_approvals_data(_: Any):
     """
     Loads drug approvals data from Google Cloud Storage (GCS) or locally if GCS is unreachable,
     processes the data to extract the year of approval, and provides boundary years for inputs.
