@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Any
 
 import dash
 from dash import dcc, html, callback, Input, Output, State, no_update, clientside_callback, ClientsideFunction
@@ -375,7 +375,7 @@ layout = html.Div(
     Input('year-input', 'value'),
     State('drug-approvals-data', 'data')
 )
-def update_drug_approvals_data(year: int, data: dict) -> Tuple[list[dict], str, str]:
+def update_drug_approvals_data(year: int, data: dict):
     """
     Filters drug approvals data based on the selected year and converts it to a dictionary suitable for Dash components.
 
@@ -427,7 +427,7 @@ def update_count_total_approvals(data: dict, year: int) -> int:
     State('drug-approvals-last-update', 'data'),
     prevent_initial_call=True
 )
-def update_kpi_panel(data: List[Dict[str, Any]], last_update) -> tuple[Any, str | Any]:
+def update_kpi_panel(data, last_update):
     """
     Processes drug approval data to update KPIs for display in the dashboard.
 
@@ -631,7 +631,7 @@ def update_stacked_fig(data: dict, item_type: str, n_companies: int) -> Figure:
     Input('filtered-drug-approvals-data', 'data'),
     prevent_initial_callback=True
 )
-def update_grid_approvals(data: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
+def update_grid_approvals(data):
     """
     Updates the data and column definitions for an Ag-Grid component in a Dash application.
 
