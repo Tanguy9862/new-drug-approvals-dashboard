@@ -45,3 +45,7 @@ Key features:
 The system is designed for flexibility in deployment:
 - **Local Setup:** Clone the repository, install dependencies from `requirements.txt`, and run locally.
 - **Cloud Deployment:** For deploying on Google Cloud Platform (GCP) or Amazon Web Services (AWS), modify the `user_config.py` to fit your configurations. Ensure appropriate permissions are set.
+
+If you need to configure the application for a specific environment, check the corresponding branches:
+- **AWS Configuration**: Branch [`env/aws-config`](https://github.com/Tanguy9862/new-drug-approvals-dashboard/tree/env/aws-config)
+- **GCP Configuration**: Branch [`env/gcp`](https://github.com/Tanguy9862/new-drug-approvals-dashboard/tree/env/gcp)
