@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from typing import Optional
-from user_config import AWS_SECRET_NAME, AWS_REGION_NAME
 from utils.aws_secrets_manager import get_secret_from_aws
 
 # Load .env file for local environments
@@ -26,11 +25,6 @@ def get_env_variable(var_name: str, default: Optional[str] = None) -> str:
     value = os.getenv(var_name)
     if value:
         return value
-
-    # Step 2: Check AWS Secrets Manager
-    aws_secrets = get_secret_from_aws(secret_name=AWS_SECRET_NAME, region_name=AWS_REGION_NAME)
-    if aws_secrets and var_name in aws_secrets:
-        return aws_secrets[var_name]
 
     # Step 4: Use default value if available
     if default:

@@ -1,9 +1,7 @@
-import boto3
 import pandas as pd
 import json
 import logging
-from io import StringIO
-from config import CONFIG, AWSConfig, LocalConfig
+from config import CONFIG, LocalConfig
 
 
 def load_data(data_type: str, file_type: str):
@@ -27,25 +25,6 @@ def load_data(data_type: str, file_type: str):
             logging.warning(f'[+] Error loading file from {filepath}: {e}')
         else:
             logging.info(f'[+] {filename} successfully loaded!')
-            return data, last_update
-
-    # Loading data from AWS using S3 bucket
-    elif isinstance(CONFIG, AWSConfig):
-        s3 = boto3.client('s3')
-        logging.info(f'[AWS] -> Attempting to load data file from Bucket: {CONFIG.BUCKET_NAME}, Key: {filename}')
-
-        try:
-            response = s3.get_object(Bucket=CONFIG.BUCKET_NAME, Key=filename)
-            last_update = f"{response['LastModified'].strftime('%Y-%m-%d %H:%M')}"
-            if file_type == 'json':
-                data = json.load(response['Body'])
-            else:
-                csv_content = response['Body'].read().decode('utf-8')
-                data = pd.read_csv(StringIO(csv_content))
-        except s3.exceptions.NoSuchKey:
-            logging.warning(f'[+] No data file found in S3 at Key: {filename}')
-        else:
-            logging.info(f'[+] Data file ({filename}) successfully loaded from S3!')
             return data, last_update
 
     raise RuntimeError(
