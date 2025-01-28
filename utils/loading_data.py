@@ -20,7 +20,7 @@ def load_data(data_type: str, file_type: str):
                     data = json.load(f)
             else:
                 data = pd.read_csv(filepath)
-            last_update = '[LOCAL ENVIRONMENT] No date available'
+            last_update = '[LOCAL]'
         except Exception as e:
             logging.warning(f'[+] Error loading file from {filepath}: {e}')
         else:

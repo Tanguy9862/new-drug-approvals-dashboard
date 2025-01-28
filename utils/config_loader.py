@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 from typing import Optional
-from utils.aws_secrets_manager import get_secret_from_aws
 
 # Load .env file for local environments
 load_dotenv()
