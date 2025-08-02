@@ -3,7 +3,7 @@
 An interactive dashboard developed with Dash by Plotly, which visualizes up-to-date information on newly approved drugs. The dashboard **autonomously updates every 24 hours through a fully automated scraper** that manages data retrieval and storage, ensuring the information is always current without any manual intervention.
 ## 🌍 Live Application
 
-Explore the live dashboard [here](https://mbmfigdadj.us-east-1.awsapprunner.com/).
+Explore the live dashboard [here](https://new-drug-approvals-app-877398320808.us-central1.run.app).
 
 ## 🖼️ Dashboard Previews
 
